@@ -1,0 +1,13 @@
+/master/gcc/nbproject/
+/master/gcc/objects/
+/master/gcc/salida.elf
+/master/mdk/Listings
+/master/mdk/Objects/
+/master/mdk/*.uvguix.*
+
+/slave/gcc/nbproject/
+/slave/gcc/objects/
+/slave/gcc/salida.elf
+/slave/mdk/Listings
+/slave/mdk/Objects/
+/slave/mdk/*.uvguix.*
