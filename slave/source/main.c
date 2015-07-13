@@ -5,7 +5,6 @@
 /*Led PB13, Button PC13*/
 
 void delay_ms(int delay_time);
-void led_init(void);
 
 void i2c_init_slave(void);
 
@@ -15,38 +14,27 @@ Serial_t USART2_Serial={USART2_getChar,USART2_sendChar};
 char mybf[80];/*Input buffer*/
 char wordBuffer[80];
 
+int rDataCounter=0;
+int rxi2cData[3];
+int rx_index=0;
+int evnt_counter=0;
+
 int main(){
-	int lineCounter=1;
-	led_init();
+	int lastCounter=0;
 	USART2_init(9600);
-	serial_puts(USART2_Serial,"\nSystem ready\n");
+	serial_puts(USART2_Serial,"\nI2C Slave ready\n");
 	i2c_init_slave();
 	while(1){
-		serial_printf(USART2_Serial,"%d$ ",lineCounter);
-		serial_gets(USART2_Serial,mybf,80);
-		serial_printf(USART2_Serial,"%s\n",mybf);
-		if(sscanf(mybf,"%s",wordBuffer) > 0){
-			serial_printf(USART2_Serial,"word: %s\n",wordBuffer);
-			serial_printf(USART2_Serial,"characters: %d\n",strlen(wordBuffer));
+		if(rDataCounter!=lastCounter){
+			serial_printf(USART2_Serial,"data= %d\n",rDataCounter);
+			serial_printf(USART2_Serial,"d[0]=%d\n",rxi2cData[0]);
+			serial_printf(USART2_Serial,"d[1]=%d\n",rxi2cData[1]);
+			serial_printf(USART2_Serial,"d[2]=%d\n",rxi2cData[2]);
+			lastCounter=rDataCounter;
 		}
-		lineCounter++;
 	}
-	return 0;
 }
 
-
-void led_init(void){
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB,ENABLE);
-	GPIO_InitTypeDef myGPIO;
-	GPIO_StructInit(&myGPIO);
-	myGPIO.GPIO_Pin=GPIO_Pin_13;
-	myGPIO.GPIO_Mode=GPIO_Mode_OUT;
-	myGPIO.GPIO_OType=GPIO_OType_PP;
-	myGPIO.GPIO_PuPd=GPIO_PuPd_NOPULL;
-	myGPIO.GPIO_Speed=GPIO_Speed_10MHz;
-	GPIO_Init(GPIOB,&myGPIO);
-	GPIO_WriteBit(GPIOB,GPIO_Pin_13,Bit_RESET);
-}
 
 void delay_ms(int delay_time){
 	for(int i=0; i<delay_time; i++);
@@ -99,10 +87,7 @@ void i2c_init_slave(void){
 	I2C_Cmd(I2C1,ENABLE);
 }
 
-int rDataCounter=0;
-int rxi2cData[3];
-int rx_index=0;
-int evnt_counter=0;
+
 void I2C1_EV_IRQHandler(void){
 	if(I2C_GetITStatus(I2C1,I2C_IT_ADDR)){
 		I2C_ClearITPendingBit(I2C1,I2C_IT_ADDR);

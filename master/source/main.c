@@ -2,10 +2,9 @@
 #include "serial_stdio.h"
 #include "retarget_stm32f4.h"
 #include <string.h>
-/*Led PB13, Button PC13*/
+/*Led PA5, Button PC13*/
 
 void delay_ms(int delay_time);
-void led_init(void);
 void button_init(void);
 
 void i2c_master_init(void);
@@ -19,32 +18,22 @@ char mybf[80];/*Input buffer*/
 char wordBuffer[80];
 
 int main(){
-	unsigned short dac_val;
-	float volt=3.0;
-	led_init();
+	unsigned short dac_val=0;
 	USART2_init(9600);
 	i2c_master_init();
-	serial_puts(USART2_Serial,"\nSystem ready\n");
+	serial_puts(USART2_Serial,"\nI2C Master ready\n");
 	while(1){
-		delay_ms(0xFFFF);
-		dac_val=(unsigned short)(volt*(4095.0/3.3));
+		delay_ms(0x2FFFFF);
 		DAC_output(dac_val);
+		dac_val++;
+		serial_printf(USART2_Serial,"Sending 0x%02X\n",dac_val);
 	}
-	return 0;
 }
 
 void delay_ms(int delay_time){
 	for(int i=0; i<delay_time; i++);
 }
 
-void led_init(void){
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE);
-	GPIO_InitTypeDef myGPIO;
-	GPIO_StructInit(&myGPIO);
-	myGPIO.GPIO_Mode=GPIO_Mode_OUT;
-	myGPIO.GPIO_Pin=GPIO_Pin_5;
-	GPIO_Init(GPIOA,&myGPIO);
-}
 
 void button_init(void){
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC,ENABLE);
